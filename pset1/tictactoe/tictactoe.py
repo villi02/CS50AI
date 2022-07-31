@@ -74,24 +74,33 @@ def winner(board):
 
     # Check rows
     for i in range(3):
-        if board[i].count(X) or board[i].count(O) == 3:
-            return board[i][i]
+        if board[i].count('X') == 3 or board[i].count('O') == 3:
+            if board[i][i] == 'X':
+                return X
+            else:
+                return O
 
     # Check columns
     columns = []
     for i in range(3):
-        columns.append([board[i][0], board[i][1], board[i][2]])
+        columns.append([board[0][i], board[1][i], board[2][i]])
     for i in range(3):
-        if columns[i].count(X) or columns[i].count(O) == 3:
-            return columns[i][i]
+        if columns[i].count('X') == 3 or columns[i].count('O') == 3:
+            if columns[i][i] == 'X':
+                return X
+            else:
+                return O
 
     # Check diagonally
     diagonals = []
     diagonals.append([board[0][0], board[1][1], board[2][2]])
     diagonals.append([board[0][2], board[1][1], board[2][0]])
     for i in range(2):
-        if diagonals.count(X) or diagonals.count(O) == 3:
-            return diagonals[i][i]
+        if diagonals[i].count('X') == 3 or diagonals[i].count('O') == 3:
+            if columns[i][i] == 'X':
+                return X
+            else:
+                return O
 
     return None
 
@@ -104,10 +113,13 @@ def terminal(board):
     if winner(board) != None:
         return True
 
-    elif EMPTY not in board:
-        return True
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == None:
+                return False
+
     else:
-        return False
+        return True
 
 
 def utility(board):
@@ -121,6 +133,34 @@ def utility(board):
     else:
         return 0
 
+# My own function
+def minValue(board):
+    """
+    Returns min value for a state
+    """
+    if terminal(board):
+        return utility(board)
+
+    minEval = math.inf
+    for action in actions(board):
+        if minEval != min(minEval, maxValue(result(board, action))):
+            minEval = maxValue(result(board, action))
+    return minEval
+
+# My own function!
+def maxValue(board):
+    """
+    Returns min value for a state
+    """
+    if terminal(board):
+        return utility(board)
+
+    maxEval = -math.inf
+    for action in actions(board):
+        if maxEval != max(maxEval, minValue(result(board, action))):
+            maxEval = minValue(result(board, action))
+
+    return maxEval
 
 def minimax(board):
     """
@@ -130,3 +170,24 @@ def minimax(board):
     if terminal(board):
         return None
 
+    current_player = player(board)
+
+    if current_player == X:
+        maxVal = -math.inf
+        bestAction = tuple()
+
+        for action in actions(board):
+            if maxVal < max(maxVal, minValue(result(board, action))):
+                maxVal = minValue(result(board, action))
+                bestAction = action
+        return bestAction
+
+    if current_player == O:
+        minVal = math.inf
+        bestAction = tuple()
+
+        for action in actions(board):
+            if minVal > min(minVal, maxValue(result(board, action))):
+                minVal = maxValue(result(board, action))
+                bestAction = action
+        return bestAction
